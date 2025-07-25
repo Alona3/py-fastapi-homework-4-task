@@ -107,7 +107,6 @@ async def register_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Default user group not found."
         )
-    activation_link = f"http://127.0.0.1/accounts/activate/?token={activation_token.token}"
     
     background_tasks.add_task(
         email_sender.send_account_activation_email,
@@ -128,6 +127,9 @@ async def register_user(
 
         await db.commit()
         await db.refresh(new_user)
+
+        activation_link = f"http://127.0.0.1/accounts/activate/?token={activation_token.token}"
+
     except SQLAlchemyError as e:
         await db.rollback()
         raise HTTPException(
@@ -281,7 +283,8 @@ async def request_password_reset_token(
     reset_token = PasswordResetTokenModel(user_id=cast(int, user.id))
     db.add(reset_token)
     await db.commit()
-
+    await db.refresh(reset_token) 
+    
     password_reset_link = f"http://127.0.0.1/accounts/reset-password/?token={reset_token.token}"
     
     background_tasks.add_task(

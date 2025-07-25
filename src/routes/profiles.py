@@ -6,6 +6,7 @@ from src.config.dependencies import get_db, get_current_user, get_s3_storage_cli
 from src.database.models import UserModel, ProfileModel
 from schemas.profiles import ProfileRequestSchema, ProfileResponseSchema
 from validation import validate_image
+from storages import S3StorageInterface
 
 router = APIRouter()
 
@@ -21,7 +22,7 @@ async def create_profile(
     avatar: UploadFile = File(...),
     current_user: UserModel = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-    s3_client = Depends(get_s3_storage_client),
+    s3_client: S3StorageInterface = Depends(get_s3_storage_client),
 ):
     # --- Authorization check ---
     # get_current_user вже робить валідацію токена і викидає HTTPException 401 при проблемах
